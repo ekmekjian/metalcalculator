@@ -1,0 +1,57 @@
+#! /usr/bin/python
+# TODO: Pull metal Prices from Kitco
+# TODO: send prices to calculations
+# TODO: allow user to set formula
+# TODO: allow user to edit formula
+# TODO: create a folder to save Prices
+# TODO: everyday generates a txt file for that days prices based on the formula
+#       provided by the user
+from bs4 import BeautifulSoup
+import requests
+from Tkinter import *
+import Tkinter as Tk, re
+import tkFont
+import datetime, time
+
+class MetalWindow(Tk.Tk):
+    def __init__(self):
+        Tk.Tk.__init__(self)
+        self.title('Metal Calculator')
+        self.winGeometry()
+        calc = Calculations()
+        calc.__init__()
+        self.winGeometry()
+        self.priceDisplay(calc)
+    
+    def winGeometry(self):
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        x = ws-200
+        y = hs-600
+        self.geometry('%dx%d+%d+%d'%(250,250,x,y))
+    def priceDisplay(self,cal):
+        displayText = Text(self, width=45, height=20)
+        displayText.insert(END,"Today's prices are:\n ")
+        displayText.insert(END,"Gold: %d Plat: %d \n"% (float(cal.gold), float(cal.plat)))
+        displayText.insert(END,"18w: %d "% (cal.whiteCal(cal.metal18k)))
+        displayText.insert(END,"14w: %d "% (cal.whiteCal(cal.metal14k)))
+        displayText.insert(END,"18y: %d "% (cal.yellowCal(cal.metal18k)))
+        displayText.insert(END,"14y: %d "% (cal.yellowCal(cal.metal14k)))
+        displayText.pack()
+class Calculations():
+    def __init__(self):
+        page = requests.get("http://www.kitco.com/market/")
+        soup = BeautifulSoup(page.content,'html.parser')
+        self.gold = soup.find(id="AU-high").get_text()
+        self.plat = soup.find(id="PT-high").get_text()
+        self.silver = 3
+        self.metal18k = 26.66
+        self.metal14k = 34.18
+    def whiteCal(self,metal):
+        return str((self.gold+3+320)/metal)
+    def yellowCal(self,metal):
+        return str((self.gold+3+215)/metal)
+        
+if __name__ == '__main__':
+    main = MetalWindow()
+    main.mainloop()
